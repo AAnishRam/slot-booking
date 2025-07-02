@@ -15,7 +15,7 @@ export const metadata = {
   title: "SLOT BOOKING",
   description: "An Inhouse Application for Office Slot Booking",
   icons: {
-    icon: "/desk.png",
+    icon: "/logo.png",
   },
 };
 
