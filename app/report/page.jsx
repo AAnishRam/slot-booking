@@ -2,7 +2,8 @@
 import React, { useState, useMemo } from "react";
 import { Download, Calendar, User, MapPin, Filter, Search } from "lucide-react";
 import { bookingData } from "../data/data";
-
+import Image from "next/image";
+import goml from "../assets/goml.png";
 export default function Report() {
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
@@ -102,8 +103,9 @@ export default function Report() {
   };
 
   return (
-    <div className="min-h-screen bg-orange-50 p-6 text-black">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen border-[20px] border-[#fe7503] bg-[#fe7503] text-black">
+      <div className="w-full rounded-2xl bg-amber-50 p-6 mx-auto">
+        <Image src={goml} width={150} height={150} className=" mt-5 mb-10" alt="Logo" />
         <div className="bg-orange-200 border border-orange-300 rounded-lg p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -117,13 +119,13 @@ export default function Report() {
             <div className="flex gap-3">
               <button
                 onClick={exportToCSV}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg cursor-pointer hover:bg-orange-700"
               >
                 <Download size={16} /> Export CSV
               </button>
               <button
                 onClick={exportToJSON}
-                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800"
               >
                 <Download size={16} /> Export JSON
               </button>
