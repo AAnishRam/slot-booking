@@ -105,7 +105,7 @@ export default function Report() {
   return (
     <div className="min-h-screen border-[20px] border-[#fe7503] bg-[#fe7503] text-black">
       <div className="w-full rounded-2xl bg-amber-50 p-6 mx-auto">
-        <Image src={goml} width={150} height={150} className=" mt-5 mb-10" alt="Logo" />
+        <Image src={goml} width={150} height={50} className=" mt-5 mb-10" alt="Logo" />
         <div className="bg-orange-200 border border-orange-300 rounded-lg p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
