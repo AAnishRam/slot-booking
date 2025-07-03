@@ -4,10 +4,8 @@
 }
 .main{
     height: 100vh;
-    background-image:url('../assets/images/goml_bg.png');
     background-size: cover;
     overflow: hidden;
-    overflow-y: hidden;
 }
 .overlay{
     position: absolute;
@@ -16,7 +14,7 @@
     background-color: rgba(237, 125, 49, 0.3);
 }
 
-.lamp2{
+/* .lamp2{
    left: -40px;
    margin-right: 60px;
 }
@@ -24,13 +22,13 @@
 .lamp3{
     right: -40px;
     margin-left: 60px;
-}
+} */
 
-.lampcontent{
+/* .lampcontent{
     display: flex;
     width: 100%;
     justify-content: center;
-    /* gap: 30px; */
+    gap: 30px;
 }
 
 .lamp2 ,.lamp3{
@@ -41,17 +39,19 @@
 .lamp{
     zoom: 120%;
     opacity: 0.7;
-}
+} */
 
 .login-card {
-    position: relative;
-    top: -100px;
-    width: 300px;
-  /* background: linear-gradient(to bottom right, #ffd6b0, #ffb88c); */
-    padding: 20px;
-    /* border-radius: 8px; */
-  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background-color: rgba(255,255,255, 0.4);
     text-align: center;
+    padding: 80px 20px;
+    width: 400px;
+    
 }
 
 .login-title {
@@ -60,19 +60,19 @@
   font-weight: bold;
   margin-bottom: 38px;
   font-family: inter;
+  margin: 20px;
 }
 
 .input-group {
+  margin: 20px;
   display: flex;
   align-items: center;
   border-bottom: 2px solid #c54a00;
   margin-bottom: 20px;
   padding: 4px;
-  
+  /* width: 230px; */
 }
-
-.icon {
-  color: #c54a00;
+.icon{
   margin-right: 8px;
 }
 
@@ -95,12 +95,11 @@
   font-weight: bold;
   margin-top: 30px;
   width: 200px;
-  /* transition: background 0.3s ease, transform 0.8s ease; */
+
 }
 
 .login-button:hover {
   background: linear-gradient(to right, #0E0A1A, #555458);
-  /* transform: scale(1.02); */
 }
 
 .login-button:active {
@@ -108,21 +107,21 @@
 }
 
 .login-container {
+ display: flex;
+ flex-direction: column;  
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+
+.content{
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
 }
 
-.pot1, .pot2 {
-  position: relative;
-  top: -70px;
-  margin: 20px;
-  opacity: 0.6;
-}
-
-.pot1{
-    transform: rotate(20deg);
-}
-.pot2{
-    transform: rotate(-20deg);
+.animation-container {
+position: relative;
+z-index: -1;
 }
