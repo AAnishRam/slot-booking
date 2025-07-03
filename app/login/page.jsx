@@ -8,6 +8,7 @@ import { User, EyeOff } from "lucide-react";
 import Lottie from "lottie-react";
 import loginpAnimation from "../assets/animations/Animation-login.json";
 
+
 const Login = () => {
   // State variables
   const [username, setUsername] = useState("");
