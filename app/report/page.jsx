@@ -7,14 +7,20 @@ import { getBookingsByDate } from "../services/getBookings";
 import { deleteSlot } from "../services/deleteSlot";
 
 export default function Report() {
+  const getTomorrow = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().slice(0, 10);
+  };
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
   );
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [bookingData, setBookingData] = useState([]);
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(getTomorrow());
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
