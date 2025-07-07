@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo,useEffect } from "react";
 import { Download, Calendar, User, MapPin, Filter, Search } from "lucide-react";
 import { bookingData } from "../data/data";
 import Image from "next/image";
 import goml from "../assets/goml.png";
+import { getBookingsByDate } from "../services/getBookings";
 export default function Report() {
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
@@ -11,6 +12,15 @@ export default function Report() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const date = '08-07-2025'; 
+      await getBookingsByDate(date);
+    };
+
+    fetchData();
+  }, []);
 
   const filteredBookings = useMemo(() => {
     return bookingData.filter((booking) => {
