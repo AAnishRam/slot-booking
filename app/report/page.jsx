@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
-import { Download, Calendar, User, MapPin, Filter, Search, X } from "lucide-react";
+import { Download, Calendar, User, MapPin, Filter, Search, X ,Trash2} from "lucide-react";
 import Image from "next/image";
 import goml from "../assets/goml.png";
 import { getBookingsByDate } from "../services/getBookings";
+import { deleteSlot } from "../services/deleteSlot";
 
 export default function Report() {
   const [selectedMonth, setSelectedMonth] = useState(
@@ -63,6 +64,28 @@ export default function Report() {
 
     return filtered;
   }, [bookingData, statusFilter, searchTerm]);
+
+  const handleDeleteSlot = async () => {
+    const dateInput = prompt("Enter date to delete (dd-mm-yyyy format):");
+
+    if (!dateInput) return;
+
+    const datePattern = /^\d{2}-\d{2}-\d{4}$/;
+    if (!datePattern.test(dateInput)) {
+      alert("Invalid date format. Please use dd-mm-yyyy format.");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the slot for ${dateInput}?`
+    );
+
+    if (confirmDelete) {
+      try {
+        console.log(await deleteSlot(dateInput));
+      } catch (error) {}
+    }
+  };
 
  
   const statistics = useMemo(() => {
@@ -183,6 +206,12 @@ export default function Report() {
               className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download size={16} /> Export JSON
+            </button>
+            <button
+              onClick={handleDeleteSlot}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg cursor-pointer hover:bg-red-700"
+            >
+              <Trash2 size={16} /> Delete Slot
             </button>
           </div>
         </div>
