@@ -11,7 +11,6 @@ export default function LoginPage() {
   return (
     <div className="container">
       <div className="left-panel">
-        {/* ✅ Animation */}
         <Lottie
           animationData={animationData}
           loop
