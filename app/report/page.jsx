@@ -1,21 +1,31 @@
 "use client";
-import React, { useState, useMemo,useEffect } from "react";
-import { Download, Calendar, User, MapPin, Filter, Search } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import {
+  Download,
+  Calendar,
+  User,
+  MapPin,
+  Filter,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { bookingData } from "../data/data";
 import Image from "next/image";
 import goml from "../assets/goml.png";
 import { getBookingsByDate } from "../services/getBookings";
+import { deleteSlot } from "../services/deleteSlot";
 export default function Report() {
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
   );
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
 
   useEffect(() => {
     const fetchData = async () => {
-      const date = '08-07-2025'; 
+      const date = "08-07-2025";
       await getBookingsByDate(date);
     };
 
@@ -112,234 +122,256 @@ export default function Report() {
     });
   };
 
+  const handleDeleteSlot = async () => {
+    const dateInput = prompt("Enter date to delete (dd-mm-yyyy format):");
+
+    if (!dateInput) return;
+
+    const datePattern = /^\d{2}-\d{2}-\d{4}$/;
+    if (!datePattern.test(dateInput)) {
+      alert("Invalid date format. Please use dd-mm-yyyy format.");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the slot for ${dateInput}?`
+    );
+
+    if (confirmDelete) {
+      try {
+        console.log(await deleteSlot(dateInput));
+      } catch (error) {}
+    }
+  };
+
   return (
-   // <div className="min-h-screen border-[20px] border-[#fe7503] bg-[#fe7503] text-black">
-      <div className="w-full  bg-amber-50 p-6 mx-auto">
-        <Image src={goml} width={150} height={50} className=" mb-10" alt="Logo" />
-        <div className="bg-orange-200 border border-orange-300 rounded-lg p-6 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-orange-700">
-                Seat Booking Dashboard
-              </h1>
-              <p className="text-orange-600 mt-1">
-                Manage and track seat reservations
+    // <div className="min-h-screen border-[20px] border-[#fe7503] bg-[#fe7503] text-black">
+    <div className="w-full  bg-amber-50 p-6 mx-auto">
+      <Image src={goml} width={150} height={50} className=" mb-10" alt="Logo" />
+      <div className="bg-orange-200 border border-orange-300 rounded-lg p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-orange-700">
+              Seat Booking Dashboard
+            </h1>
+            <p className="text-orange-600 mt-1">
+              Manage and track seat reservations
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg cursor-pointer hover:bg-orange-700"
+            >
+              <Download size={16} /> Export CSV
+            </button>
+            <button
+              onClick={exportToJSON}
+              className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800"
+            >
+              <Download size={16} /> Export JSON
+            </button>
+            <button
+              onClick={handleDeleteSlot}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg cursor-pointer hover:bg-red-700"
+            >
+              <Trash2 size={16} /> Delete Slot
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="bg-orange-100 border border-orange-300 rounded-lg p-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-orange-700 mb-2">
+              <Calendar size={16} className="inline mr-1" /> Month
+            </label>
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-orange-700 mb-2">
+              <Search size={16} className="inline mr-1" /> Search
+            </label>
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-orange-700 mb-2">
+              <Filter size={16} className="inline mr-1" /> Status
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              <option value="all">All Status</option>
+              <option value="booked">Booked</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-orange-700 mb-2">
+              Department
+            </label>
+            <select
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              <option value="all">All Departments</option>
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">
+          <div className="flex items-center">
+            <div className="p-2 bg-orange-300/40 rounded-lg">
+              <Calendar className="w-6 h-6 text-orange-700" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-orange-600">
+                Total Bookings
+              </p>
+              <p className="text-2xl font-bold text-black">
+                {filteredBookings.length}
               </p>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={exportToCSV}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg cursor-pointer hover:bg-orange-700"
-              >
-                <Download size={16} /> Export CSV
-              </button>
-              <button
-                onClick={exportToJSON}
-                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800"
-              >
-                <Download size={16} /> Export JSON
-              </button>
+          </div>
+        </div>
+
+        <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">
+          <div className="flex items-center">
+            <div className="p-2 bg-orange-300/40 rounded-lg">
+              <User className="w-6 h-6 text-orange-700" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-orange-600">Confirmed</p>
+              <p className="text-2xl font-bold text-black">
+                {filteredBookings.filter((b) => b.status === "booked").length}
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-orange-100 border border-orange-300 rounded-lg p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-orange-700 mb-2">
-                <Calendar size={16} className="inline mr-1" /> Month
-              </label>
-              <input
-                type="month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
+        <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">
+          <div className="flex items-center">
+            <div className="p-2 bg-red-300/40 rounded-lg">
+              <Download className="w-6 h-6 text-red-600" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-orange-700 mb-2">
-                <Search size={16} className="inline mr-1" /> Search
-              </label>
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-orange-700 mb-2">
-                <Filter size={16} className="inline mr-1" /> Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <option value="all">All Status</option>
-                <option value="booked">Booked</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-orange-700 mb-2">
-                Department
-              </label>
-              <select
-                value={departmentFilter}
-                onChange={(e) => setDepartmentFilter(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <option value="all">All Departments</option>
-                {departments.map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
-                ))}
-              </select>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-orange-600">Cancelled</p>
+              <p className="text-2xl font-bold text-black">
+                {
+                  filteredBookings.filter((b) => b.status === "cancelled")
+                    .length
+                }
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-300/40 rounded-lg">
-                <Calendar className="w-6 h-6 text-orange-700" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-orange-600">
-                  Total Bookings
-                </p>
-                <p className="text-2xl font-bold text-black">
-                  {filteredBookings.length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-300/40 rounded-lg">
-                <User className="w-6 h-6 text-orange-700" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-orange-600">Confirmed</p>
-                <p className="text-2xl font-bold text-black">
-                  {filteredBookings.filter((b) => b.status === "booked").length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-red-300/40 rounded-lg">
-                <Download className="w-6 h-6 text-red-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-orange-600">Cancelled</p>
-                <p className="text-2xl font-bold text-black">
-                  {
-                    filteredBookings.filter((b) => b.status === "cancelled")
-                      .length
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-orange-100 rounded-lg border border-orange-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full divide-y divide-orange-300">
-              <thead className="bg-orange-200">
-                <tr>
-                  {[
-                    "Person",
-                    "Seat",
-                    "Date",
-                    "Time",
-                    "Department",
-                    "Status",
-                  ].map((col) => (
+      <div className="bg-orange-100 rounded-lg border border-orange-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full divide-y divide-orange-300">
+            <thead className="bg-orange-200">
+              <tr>
+                {["Person", "Seat", "Date", "Time", "Department", "Status"].map(
+                  (col) => (
                     <th
                       key={col}
                       className="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider"
                     >
                       {col}
                     </th>
-                  ))}
+                  )
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBookings.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-12 text-center text-orange-600"
+                  >
+                    No bookings found for the selected criteria
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredBookings.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-6 py-12 text-center text-orange-600"
-                    >
-                      No bookings found for the selected criteria
+              ) : (
+                filteredBookings.map((booking) => (
+                  <tr key={booking.id} className="hover:bg-orange-200">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-black">
+                        {booking.name}
+                      </div>
+                      <div className="text-sm text-orange-700">
+                        {booking.email}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <MapPin className="w-4 h-4 text-orange-600 mr-2" />
+                        <span className="text-sm font-medium text-black">
+                          Seat {booking.seatNumber}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-black">
+                      {formatDate(booking.date)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-black">
+                      {booking.timeSlot}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-black">
+                      {booking.department}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(
+                          booking.status
+                        )}`}
+                      >
+                        {booking.status.charAt(0).toUpperCase() +
+                          booking.status.slice(1)}
+                      </span>
                     </td>
                   </tr>
-                ) : (
-                  filteredBookings.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-orange-200">
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-black">
-                          {booking.name}
-                        </div>
-                        <div className="text-sm text-orange-700">
-                          {booking.email}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <MapPin className="w-4 h-4 text-orange-600 mr-2" />
-                          <span className="text-sm font-medium text-black">
-                            Seat {booking.seatNumber}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-black">
-                        {formatDate(booking.date)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-black">
-                        {booking.timeSlot}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-black">
-                        {booking.department}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(
-                            booking.status
-                          )}`}
-                        >
-                          {booking.status.charAt(0).toUpperCase() +
-                            booking.status.slice(1)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="mt-8 text-center text-sm text-orange-600">
-          Showing {filteredBookings.length} booking
-          {filteredBookings.length !== 1 ? "s" : ""} for{" "}
-          <span className="text-orange-800 font-medium">
-            {new Date(selectedMonth + "-01").toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      <div className="mt-8 text-center text-sm text-orange-600">
+        Showing {filteredBookings.length} booking
+        {filteredBookings.length !== 1 ? "s" : ""} for{" "}
+        <span className="text-orange-800 font-medium">
+          {new Date(selectedMonth + "-01").toLocaleDateString("en-US", {
+            month: "long",
+            year: "numeric",
+          })}
+        </span>
+      </div>
+    </div>
     //</div>
   );
 }
