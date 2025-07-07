@@ -1,13 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Building } from "lucide-react";
 import Lottie from "lottie-react";
 import desk from "../assets/animations/desk.json"; // Adjust the path as necessary
+import { getSeatStatus, handlebookSeat ,handleCancelSeat } from "../services/bookingOP";
 
 const ContentArea = ({ children }) => {
   const [isBottomSeatOccupied, setIsBottomSeatOccupied] = useState(false);
   const getAnimationSegment = isBottomSeatOccupied ? [57, 120] : [48, 49];
+
+
+  useEffect(() => {
+    const fetchSeatStatus = async () => {
+      // Simulate an API call to check seat status
+      getSeatStatus(setIsBottomSeatOccupied);
+    };
+
+    fetchSeatStatus();
+  }, []);
 
   return (
     <div className="lg:col-span-2">
@@ -30,7 +41,7 @@ const ContentArea = ({ children }) => {
         )}
         <div className="flex gap-4 mt-10 flex-wrap items-center justify-center">
           <button
-            onClick={() => setIsBottomSeatOccupied(true)}
+            onClick={() => handlebookSeat(setIsBottomSeatOccupied)}
             className=" cursor-pointer px-6 py-3 bg-emerald-600 text-white font-medium rounded-lg 
               hover:bg-emerald-500 active:bg-emerald-700 
               disabled:bg-gray-600 disabled:cursor-not-allowed
@@ -41,7 +52,7 @@ const ContentArea = ({ children }) => {
           </button>
 
           <button
-            onClick={() => setIsBottomSeatOccupied(false)}
+            onClick={() => handleCancelSeat(setIsBottomSeatOccupied)}
             className="cursor-pointer  px-6 py-3 bg-red-600 text-white font-medium rounded-lg 
               hover:bg-red-500 active:bg-red-700 
               disabled:bg-gray-600 disabled:cursor-not-allowed
