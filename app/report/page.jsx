@@ -8,7 +8,7 @@ import goml from "../assets/goml.png";
 import { getBookingsByDate } from "../services/getBookings";
 import { deleteSlot } from "../services/deleteSlot";
 
-import { deleteUserBooking } from "../services/deleteUserBooking"; // Add this import
+import { deleteUserBooking } from "../services/deleteUserBooking";
 import { enableSlot, disableSlot } from "../services/slotBookings";
 import toast, { Toaster } from "react-hot-toast";
 
