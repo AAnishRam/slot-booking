@@ -358,12 +358,12 @@ export default function Report() {
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
             >
               Disable Slot
-
+            </button>
+            <button
               onClick={handleDeleteSlot}
               className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg cursor-pointer hover:bg-red-700"
             >
-              <Trash2 size={16} /> Delete Slot
-
+              Delete Slot
             </button>
           </div>
         </div>
