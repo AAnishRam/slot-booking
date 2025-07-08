@@ -5,19 +5,28 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
-.container {
-  min-height: 100vh;
-  display: flex;
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
   background-color: #eae8e8;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
   padding: 2rem;
   gap: 1.5rem;
+  overflow: hidden;
 }
 
 
 .left-panel {
   width: 50%;
+  max-width: 600px;
   height: 500px;
   padding: 2rem;
   border-radius: 20px;
@@ -33,6 +42,7 @@
   width: 100%;
   height: 420px;
   object-fit: contain;
+  margin-top: -1rem;       
   margin-bottom: 1rem;
 }
 
@@ -61,7 +71,7 @@
 
 .right-panel {
   width: 40%;
-  background-color: #fff;
+  max-width: 450px;
   background: linear-gradient(135deg, #f3d1c6, #f5f0f0);
   display: flex;
   flex-direction: column;
@@ -70,7 +80,6 @@
   padding: 2rem 2.5rem;
   border-radius: 20px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-  height: auto;
   gap: 1rem;
 }
 
@@ -78,7 +87,6 @@
   width: 60px;
   height: auto;
   border-radius: 100%;
-  /* margin-bottom: 5px; */
 }
 
 .login-title {
@@ -88,14 +96,12 @@
   font-weight: bold;
   text-align: center;
   width: 100%;
-  margin-top: 0px;
   margin-bottom: 5px;
 }
 
 label {
   font-weight: 500;
   font-style: italic;
-  margin-top: 0.5rem;
 }
 
 .input {
@@ -127,7 +133,6 @@ label {
   background: linear-gradient(135deg, #e55b30, #d93535);
 }
 
-
 .signup-text {
   font-size: 0.9rem;
   text-align: center;
@@ -143,12 +148,50 @@ label {
   cursor: pointer;
 }
 
-
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 2rem;
+  }
+
+  .left-panel,
+  .right-panel {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .right-panel {
+    align-items: center;
+    text-align: center;
+  }
+
+  .lottie-animation {
+    height: 300px;
+    margin-top: -0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .lottie-animation {
+    height: 250px;
+    margin-top: -0.5rem;
+  }
+
+  .left-text h1 {
+    font-size: 1.4rem;
+  }
+
+  .left-text p {
+    font-size: 1rem;
+  }
 }
