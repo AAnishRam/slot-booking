@@ -7,7 +7,7 @@ import { enableSlot, disableSlot } from "../services/slotBookings";
 import { toast } from "react-hot-toast";
 
 export function useAdminBookings() {
-  // Helper to get tomorrow's date in yyyy-mm-dd format
+  //get tomorrow's date in yyyy-mm-dd format
   const getTomorrow = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -18,45 +18,66 @@ export function useAdminBookings() {
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [selectedBookings, setSelectedBookings] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(getTomorrow()); // <-- default to tomorrow
+  const [selectedDate, setSelectedDate] = useState(getTomorrow()); 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   // Fetch bookings when date changes
-  useEffect(() => {
-    if (!selectedDate) {
-      setBookingData([]);
-      setFilteredBookings([]);
-      return;
-    }
-    setIsLoading(true);
+useEffect(() => {
+  if (!selectedDate) {
+    setBookingData([]);
+    setFilteredBookings([]);
+    return;
+  }
 
-    // Convert yyyy-mm-dd to dd-mm-yyyy
-    const [year, month, day] = selectedDate.split("-");
-    const formattedDate = `${day}-${month}-${year}`;
+  setIsLoading(true);
+  setError(false);
 
-    getBookingsByDate(formattedDate)
-      .then((response) => {
-        // Transform the API response to a flat array for the table
-        let bookings = [];
-        if (response && response.data) {
-          const { list_of_booked = [], list_of_cancelled = [] } = response.data;
-          bookings = [
-            ...list_of_booked.map(email => ({ email, status: "booked" })),
-            ...list_of_cancelled.map(email => ({ email, status: "cancelled" })),
-          ];
-        }
+  const controller = new AbortController(); // optional, for canceling
+  const timeoutId = setTimeout(() => {
+    setError(true);
+    toast.error("Request timed out. Please try again.");
+    controller.abort();
+    setIsLoading(false);
+  }, 5000); 
+
+  const [year, month, day] = selectedDate.split("-");
+  const formattedDate = `${day}-${month}-${year}`;
+
+  getBookingsByDate(formattedDate)
+    .then((response) => {
+      clearTimeout(timeoutId); // Clear timeout on success
+      if (response && response.data) {
+        const { list_of_booked = [], list_of_cancelled = [] } = response.data;
+        const bookings = [
+          ...list_of_booked.map((email) => ({ email, status: "booked" })),
+          ...list_of_cancelled.map((email) => ({ email, status: "cancelled" })),
+        ];
         setBookingData(bookings);
         setFilteredBookings(bookings);
-      })
-      .catch(() => {
+      } else {
+        setError(true);
+        toast.error("No data found.");
         setBookingData([]);
         setFilteredBookings([]);
-      })
-      .finally(() => setIsLoading(false));
-  }, [selectedDate]);
+      }
+    })
+    .catch((err) => {
+      clearTimeout(timeoutId);
+      setError(true);
+      toast.error("Failed to fetch bookings. Please try again later.");
+      setBookingData([]);
+      setFilteredBookings([]);
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+
+  return () => clearTimeout(timeoutId); // clean up if component unmounts
+}, [selectedDate]);
 
   // Filter bookings when search/status changes
   useEffect(() => {
@@ -189,5 +210,7 @@ export function useAdminBookings() {
     disableSlot: handleDisableSlot,
     clearFilters,
     toast,
+    error,
+    setError,
   };
 }

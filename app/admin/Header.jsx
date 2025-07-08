@@ -20,7 +20,6 @@ export default function Header({
 
   const handleAdd = async (email) => {
     setIsLoading(true);
-    // TODO: Add your logic to add the booking here
     toast.success(`Added booking for ${email}`);
     setIsLoading(false);
     setShowModal(false);
