@@ -2,7 +2,7 @@ import React from "react";
 import { Trash2 } from "lucide-react";
 
 export default function BulkActions({
-  selectedBookings,
+  selectedBookings=[],
   isDeleting,
   handleDeleteSelected
 }) {

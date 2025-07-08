@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import Image from "next/image";
 import { Download } from "lucide-react";
@@ -24,6 +25,8 @@ export default function Header({
     setIsLoading(false);
     setShowModal(false);
   };
+
+ 
 
   return (
     <>

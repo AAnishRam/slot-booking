@@ -1,10 +1,10 @@
 import React from "react";
 
 export default function BookingsTable({
-  filteredBookings,
+  filteredBookings=[],
   selectAll,
   handleSelectAll,
-  selectedBookings,
+  selectedBookings=[],
   handleSelectBooking,
   getStatusColor,
   isLoading
