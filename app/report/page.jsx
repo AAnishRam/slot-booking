@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
-import { Download, Calendar, User, MapPin, Filter, Search, X ,Trash2} from "lucide-react";
+import { Download, Calendar, User, MapPin, Filter, Search, X, Trash2 } from "lucide-react";
 import Image from "next/image";
 import goml from "../assets/goml.png";
 import { getBookingsByDate } from "../services/getBookings";
 import { deleteSlot } from "../services/deleteSlot";
+import { deleteUserBooking } from "../services/deleteUserBooking"; // Add this import
 
 export default function Report() {
   const getTomorrow = () => {
@@ -12,6 +13,7 @@ export default function Report() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().slice(0, 10);
   };
+  
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
   );
@@ -22,6 +24,11 @@ export default function Report() {
   const [bookingData, setBookingData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getTomorrow());
   const [isLoading, setIsLoading] = useState(false);
+  
+  // New state for checkbox selections
+  const [selectedBookings, setSelectedBookings] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!selectedDate) return;
@@ -53,11 +60,14 @@ export default function Report() {
     fetchData();
   }, [selectedDate]);
 
+  useEffect(() => {
+    setSelectedBookings([]);
+    setSelectAll(false);
+  }, [bookingData, selectedDate]);
 
   const filteredBookings = useMemo(() => {
     let filtered = bookingData;
 
-  
     if (statusFilter !== "all") {
       filtered = filtered.filter(booking => booking.status === statusFilter);
     }
@@ -70,6 +80,92 @@ export default function Report() {
 
     return filtered;
   }, [bookingData, statusFilter, searchTerm]);
+
+  const handleSelectBooking = (email) => {
+    setSelectedBookings(prev => {
+      if (prev.includes(email)) {
+        return prev.filter(item => item !== email);
+      } else {
+        return [...prev, email];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedBookings([]);
+    } else {
+      const selectableBookings = filteredBookings
+        .filter(booking => booking.status !== "cancelled")
+        .map(booking => booking.email);
+      setSelectedBookings(selectableBookings);
+    }
+    setSelectAll(!selectAll);
+  };
+
+  useEffect(() => {
+    if (filteredBookings.length > 0) {
+      const selectableBookings = filteredBookings.filter(booking => booking.status !== "cancelled");
+      setSelectAll(selectableBookings.length > 0 && selectedBookings.length === selectableBookings.length);
+    }
+  }, [selectedBookings, filteredBookings]);
+
+  const handleDeleteSelected = async () => {
+    if (selectedBookings.length === 0) {
+      alert("Please select at least one booking to delete");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${selectedBookings.length} selected booking(s)?`
+    );
+
+    if (!confirmDelete) return;
+
+    setIsDeleting(true);
+    const failedDeletions = [];
+
+    try {
+      for (const email of selectedBookings) {
+        try {
+          const result = await deleteUserBooking(email);
+          if (!result) {
+            failedDeletions.push(email);
+          }
+        } catch (error) {
+          console.error(`Failed to delete booking for ${email}:`, error);
+          failedDeletions.push(email);
+        }
+      }
+
+      if (failedDeletions.length === 0) {
+        alert(`Successfully deleted ${selectedBookings.length} booking(s)`);
+        
+        setBookingData(prev => 
+          prev.filter(booking => !selectedBookings.includes(booking.email))
+        );
+      } else {
+        alert(
+          `Deleted ${selectedBookings.length - failedDeletions.length} booking(s). ` +
+          `Failed to delete ${failedDeletions.length} booking(s): ${failedDeletions.join(', ')}`
+        );
+        
+        const successfulDeletions = selectedBookings.filter(email => !failedDeletions.includes(email));
+        setBookingData(prev => 
+          prev.filter(booking => !successfulDeletions.includes(booking.email))
+        );
+      }
+
+      setSelectedBookings([]);
+      setSelectAll(false);
+
+    } catch (error) {
+      console.error("Error during bulk delete:", error);
+      alert("An error occurred while deleting bookings. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleDeleteSlot = async () => {
     const dateInput = prompt("Enter date to delete (dd-mm-yyyy format):");
@@ -93,7 +189,6 @@ export default function Report() {
     }
   };
 
- 
   const statistics = useMemo(() => {
     const total = bookingData.length;
     const booked = bookingData.filter(b => b.status === "booked").length;
@@ -273,6 +368,27 @@ export default function Report() {
         </div>
       </div>
 
+      {/* Bulk Actions Section */}
+      {selectedBookings.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-red-700 font-medium">
+                {selectedBookings.length} booking(s) selected
+              </span>
+            </div>
+            <button
+              onClick={handleDeleteSelected}
+              disabled={isDeleting}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 size={16} />
+              {isDeleting ? "Deleting..." : "Delete Selected"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">
           <div className="flex items-center">
@@ -331,6 +447,15 @@ export default function Report() {
               <thead className="bg-orange-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                      disabled={filteredBookings.filter(booking => booking.status !== "cancelled").length === 0}
+                      className="rounded border-orange-300 text-orange-600 focus:ring-orange-500"
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">
                     Email
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase tracking-wider">
@@ -341,7 +466,19 @@ export default function Report() {
               <tbody className="bg-white divide-y divide-orange-200">
                 {filteredBookings.length > 0 ? (
                   filteredBookings.map((item, idx) => (
-                    <tr key={idx} className=" bg-orange-50 hover:bg-orange-100">
+                    <tr key={idx} className="bg-orange-50 hover:bg-orange-100">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {item.status !== "cancelled" ? (
+                          <input
+                            type="checkbox"
+                            checked={selectedBookings.includes(item.email)}
+                            onChange={() => handleSelectBooking(item.email)}
+                            className="rounded border-orange-300 text-orange-600 focus:ring-orange-500"
+                          />
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.email}
                       </td>
@@ -354,7 +491,7 @@ export default function Report() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={2} className="px-6 py-8 text-center text-orange-600">
+                    <td colSpan={3} className="px-6 py-8 text-center text-orange-600">
                       {selectedDate 
                         ? "No bookings found for the selected date and filters" 
                         : "Please select a date to view bookings"
