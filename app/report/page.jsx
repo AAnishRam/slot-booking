@@ -1,11 +1,17 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
+
 import { Download, Calendar, User, MapPin, Filter, Search, X, Trash2 } from "lucide-react";
+
 import Image from "next/image";
 import goml from "../assets/goml.png";
 import { getBookingsByDate } from "../services/getBookings";
 import { deleteSlot } from "../services/deleteSlot";
+
 import { deleteUserBooking } from "../services/deleteUserBooking"; // Add this import
+import { enableSlot, disableSlot } from "../services/slotBookings";
+import toast, { Toaster } from "react-hot-toast";
+
 
 export default function Report() {
   const getTomorrow = () => {
@@ -17,6 +23,7 @@ export default function Report() {
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
   );
+
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -64,6 +71,14 @@ export default function Report() {
     setSelectedBookings([]);
     setSelectAll(false);
   }, [bookingData, selectedDate]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const date = "08-07-2025";
+      await getBookingsByDate(date);
+    };
+    fetchData();
+  }, []);
 
   const filteredBookings = useMemo(() => {
     let filtered = bookingData;
@@ -209,6 +224,7 @@ export default function Report() {
       ...filteredBookings.map((booking) =>
         [booking.email, booking.status]
           .map(field => `"${field}"`) 
+
           .join(",")
       ),
     ].join("\n");
@@ -223,6 +239,7 @@ export default function Report() {
   };
 
   const exportToJSON = () => {
+
     if (filteredBookings.length === 0) {
       alert("No data to export");
       return;
@@ -275,6 +292,8 @@ export default function Report() {
 
   return (
     <div className="min-h-screen w-full bg-amber-50 p-6 flex flex-col">
+      <Toaster position="top-right" />
+      
       <Image
         src={goml}
         width={150}
@@ -282,10 +301,12 @@ export default function Report() {
         className="mb-10"
         alt="Logo"
       />
+
       
       <div className="bg-orange-200 border border-orange-300 rounded-lg p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
+
             <h1 className="text-2xl font-bold text-orange-700">
               Seat Booking Dashboard
             </h1>
@@ -298,36 +319,69 @@ export default function Report() {
               onClick={exportToCSV}
               disabled={filteredBookings.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg cursor-pointer hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+
             >
               <Download size={16} /> Export CSV
             </button>
             <button
               onClick={exportToJSON}
+
               disabled={filteredBookings.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+
             >
               <Download size={16} /> Export JSON
             </button>
             <button
+
+              onClick={async () => {
+                try {
+                  await enableSlot();
+                  toast.success("Slot enabled successfully!");
+                } catch (err) {
+                  toast.error("Failed to enable slot.");
+                }
+              }}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Enable Slot
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  await disableSlot();
+                  toast.success("Slot disabled successfully!");
+                } catch (err) {
+                  toast.error("Failed to disable slot.");
+                }
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Disable Slot
+
               onClick={handleDeleteSlot}
               className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg cursor-pointer hover:bg-red-700"
             >
               <Trash2 size={16} /> Delete Slot
+
             </button>
           </div>
         </div>
       </div>
 
+
       <div className="bg-orange-100 border border-orange-300 rounded-lg p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-orange-700 mb-2">
+
               <Calendar size={16} className="inline mr-1" /> Select Date
             </label>
             <input
               type="date"
               value={selectedDate}
               onChange={e => setSelectedDate(e.target.value)}
+
               className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
@@ -337,7 +391,9 @@ export default function Report() {
             </label>
             <input
               type="text"
+
               placeholder="Search by email..."
+
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -357,6 +413,7 @@ export default function Report() {
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
+
           <div className="flex items-end">
             <button
               onClick={clearFilters}
@@ -364,6 +421,7 @@ export default function Report() {
             >
               <X size={16} /> Clear Filters
             </button>
+
           </div>
         </div>
       </div>
@@ -396,6 +454,7 @@ export default function Report() {
               <Calendar className="w-6 h-6 text-orange-700" />
             </div>
             <div className="ml-4">
+
               <p className="text-sm font-medium text-orange-600">
                 Total Bookings
               </p>
@@ -415,10 +474,12 @@ export default function Report() {
               <p className="text-sm font-medium text-orange-600">Confirmed</p>
               <p className="text-2xl font-bold text-green-800">
                 {statistics.booked}
+
               </p>
             </div>
           </div>
         </div>
+
 
         <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">
           <div className="flex items-center">
@@ -429,11 +490,13 @@ export default function Report() {
               <p className="text-sm font-medium text-orange-600">Cancelled</p>
               <p className="text-2xl font-bold text-red-800">
                 {statistics.cancelled}
+
               </p>
             </div>
           </div>
         </div>
       </div>
+
 
       <div className="bg-orange-100 rounded-lg border border-orange-200 overflow-hidden">
         {isLoading ? (
@@ -516,6 +579,7 @@ export default function Report() {
             ({filteredBookings.length} of {bookingData.length} records)
           </span>
         )}
+
       </div>
     </div>
   );
