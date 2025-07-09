@@ -1,7 +1,16 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 
-import { Download, Calendar, User, MapPin, Filter, Search, X, Trash2 } from "lucide-react";
+import {
+  Download,
+  Calendar,
+  User,
+  MapPin,
+  Filter,
+  Search,
+  X,
+  Trash2,
+} from "lucide-react";
 
 import Image from "next/image";
 import goml from "../assets/goml.png";
@@ -12,18 +21,16 @@ import { deleteUserBooking } from "../services/deleteUserBooking";
 import { enableSlot, disableSlot } from "../services/slotBookings";
 import toast, { Toaster } from "react-hot-toast";
 
-
 export default function Report() {
   const getTomorrow = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().slice(0, 10);
   };
-  
+
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
   );
-
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -31,7 +38,7 @@ export default function Report() {
   const [bookingData, setBookingData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(getTomorrow());
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // New state for checkbox selections
   const [selectedBookings, setSelectedBookings] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -39,20 +46,26 @@ export default function Report() {
 
   useEffect(() => {
     if (!selectedDate) return;
-    
+
     const fetchData = async () => {
       setIsLoading(true);
       try {
         const [year, month, day] = selectedDate.split("-");
         const formattedDate = `${day}-${month}-${year}`;
-        
+
         const res = await getBookingsByDate(formattedDate);
         if (res?.success && res.data) {
           const { list_of_booked, list_of_cancelled } = res.data;
-    
+
           const combined = [
-            ...(list_of_booked || []).map((email) => ({ email, status: "booked" })),
-            ...(list_of_cancelled || []).map((email) => ({ email, status: "cancelled" })),
+            ...(list_of_booked || []).map((email) => ({
+              email,
+              status: "booked",
+            })),
+            ...(list_of_cancelled || []).map((email) => ({
+              email,
+              status: "cancelled",
+            })),
           ];
           setBookingData(combined);
         }
@@ -84,11 +97,11 @@ export default function Report() {
     let filtered = bookingData;
 
     if (statusFilter !== "all") {
-      filtered = filtered.filter(booking => booking.status === statusFilter);
+      filtered = filtered.filter((booking) => booking.status === statusFilter);
     }
 
     if (searchTerm.trim()) {
-      filtered = filtered.filter(booking =>
+      filtered = filtered.filter((booking) =>
         booking.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -97,9 +110,9 @@ export default function Report() {
   }, [bookingData, statusFilter, searchTerm]);
 
   const handleSelectBooking = (email) => {
-    setSelectedBookings(prev => {
+    setSelectedBookings((prev) => {
       if (prev.includes(email)) {
-        return prev.filter(item => item !== email);
+        return prev.filter((item) => item !== email);
       } else {
         return [...prev, email];
       }
@@ -111,8 +124,8 @@ export default function Report() {
       setSelectedBookings([]);
     } else {
       const selectableBookings = filteredBookings
-        .filter(booking => booking.status !== "cancelled")
-        .map(booking => booking.email);
+        .filter((booking) => booking.status !== "cancelled")
+        .map((booking) => booking.email);
       setSelectedBookings(selectableBookings);
     }
     setSelectAll(!selectAll);
@@ -120,8 +133,13 @@ export default function Report() {
 
   useEffect(() => {
     if (filteredBookings.length > 0) {
-      const selectableBookings = filteredBookings.filter(booking => booking.status !== "cancelled");
-      setSelectAll(selectableBookings.length > 0 && selectedBookings.length === selectableBookings.length);
+      const selectableBookings = filteredBookings.filter(
+        (booking) => booking.status !== "cancelled"
+      );
+      setSelectAll(
+        selectableBookings.length > 0 &&
+          selectedBookings.length === selectableBookings.length
+      );
     }
   }, [selectedBookings, filteredBookings]);
 
@@ -155,25 +173,30 @@ export default function Report() {
 
       if (failedDeletions.length === 0) {
         alert(`Successfully deleted ${selectedBookings.length} booking(s)`);
-        
-        setBookingData(prev => 
-          prev.filter(booking => !selectedBookings.includes(booking.email))
+
+        setBookingData((prev) =>
+          prev.filter((booking) => !selectedBookings.includes(booking.email))
         );
       } else {
         alert(
-          `Deleted ${selectedBookings.length - failedDeletions.length} booking(s). ` +
-          `Failed to delete ${failedDeletions.length} booking(s): ${failedDeletions.join(', ')}`
+          `Deleted ${
+            selectedBookings.length - failedDeletions.length
+          } booking(s). ` +
+            `Failed to delete ${
+              failedDeletions.length
+            } booking(s): ${failedDeletions.join(", ")}`
         );
-        
-        const successfulDeletions = selectedBookings.filter(email => !failedDeletions.includes(email));
-        setBookingData(prev => 
-          prev.filter(booking => !successfulDeletions.includes(booking.email))
+
+        const successfulDeletions = selectedBookings.filter(
+          (email) => !failedDeletions.includes(email)
+        );
+        setBookingData((prev) =>
+          prev.filter((booking) => !successfulDeletions.includes(booking.email))
         );
       }
 
       setSelectedBookings([]);
       setSelectAll(false);
-
     } catch (error) {
       console.error("Error during bulk delete:", error);
       alert("An error occurred while deleting bookings. Please try again.");
@@ -182,33 +205,35 @@ export default function Report() {
     }
   };
 
-  const handleDeleteSlot = async () => {
-    const dateInput = prompt("Enter date to delete (dd-mm-yyyy format):");
+  // const handleDeleteSlot = async () => {
+  //   const dateInput = prompt("Enter date to delete (dd-mm-yyyy format):");
 
-    if (!dateInput) return;
+  //   if (!dateInput) return;
 
-    const datePattern = /^\d{2}-\d{2}-\d{4}$/;
-    if (!datePattern.test(dateInput)) {
-      alert("Invalid date format. Please use dd-mm-yyyy format.");
-      return;
-    }
+  //   const datePattern = /^\d{2}-\d{2}-\d{4}$/;
+  //   if (!datePattern.test(dateInput)) {
+  //     alert("Invalid date format. Please use dd-mm-yyyy format.");
+  //     return;
+  //   }
 
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete the slot for ${dateInput}?`
-    );
+  //   const confirmDelete = window.confirm(
+  //     `Are you sure you want to delete the slot for ${dateInput}?`
+  //   );
 
-    if (confirmDelete) {
-      try {
-        console.log(await deleteSlot(dateInput));
-      } catch (error) {}
-    }
-  };
+  //   if (confirmDelete) {
+  //     try {
+  //       console.log(await deleteSlot(dateInput));
+  //     } catch (error) {}
+  //   }
+  // };
 
   const statistics = useMemo(() => {
     const total = bookingData.length;
-    const booked = bookingData.filter(b => b.status === "booked").length;
-    const cancelled = bookingData.filter(b => b.status === "cancelled").length;
-    
+    const booked = bookingData.filter((b) => b.status === "booked").length;
+    const cancelled = bookingData.filter(
+      (b) => b.status === "cancelled"
+    ).length;
+
     return { total, booked, cancelled };
   }, [bookingData]);
 
@@ -223,23 +248,22 @@ export default function Report() {
       headers.join(","),
       ...filteredBookings.map((booking) =>
         [booking.email, booking.status]
-          .map(field => `"${field}"`) 
+          .map((field) => `"${field}"`)
 
           .join(",")
       ),
     ].join("\n");
-    
+
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `seat-bookings-${selectedDate || 'all'}.csv`;
+    link.download = `seat-bookings-${selectedDate || "all"}.csv`;
     link.click();
     window.URL.revokeObjectURL(url);
   };
 
   const exportToJSON = () => {
-
     if (filteredBookings.length === 0) {
       alert("No data to export");
       return;
@@ -249,7 +273,7 @@ export default function Report() {
       exportDate: new Date().toISOString(),
       selectedDate: selectedDate,
       totalRecords: filteredBookings.length,
-      data: filteredBookings
+      data: filteredBookings,
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -258,7 +282,7 @@ export default function Report() {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `seat-bookings-${selectedDate || 'all'}.json`;
+    link.download = `seat-bookings-${selectedDate || "all"}.json`;
     link.click();
     window.URL.revokeObjectURL(url);
   };
@@ -290,23 +314,37 @@ export default function Report() {
     });
   };
 
+  const handleDeleteSlot = async () => {
+    const dateInput = prompt("Enter date to delete (dd-mm-yyyy format):");
+
+    if (!dateInput) return;
+
+    const datePattern = /^\d{2}-\d{2}-\d{4}$/;
+    if (!datePattern.test(dateInput)) {
+      alert("Invalid date format. Please use dd-mm-yyyy format.");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the slot for ${dateInput}?`
+    );
+
+    if (confirmDelete) {
+      try {
+        console.log(await deleteSlot(dateInput));
+      } catch (error) {}
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-amber-50 p-6 flex flex-col">
       <Toaster position="top-right" />
-      
-      <Image
-        src={goml}
-        width={150}
-        height={50}
-        className="mb-10"
-        alt="Logo"
-      />
 
-      
+      <Image src={goml} width={150} height={50} className="mb-10" alt="Logo" />
+
       <div className="bg-orange-200 border border-orange-300 rounded-lg p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-
             <h1 className="text-2xl font-bold text-orange-700">
               Seat Booking Dashboard
             </h1>
@@ -319,21 +357,17 @@ export default function Report() {
               onClick={exportToCSV}
               disabled={filteredBookings.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg cursor-pointer hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-
             >
               <Download size={16} /> Export CSV
             </button>
             <button
               onClick={exportToJSON}
-
               disabled={filteredBookings.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-
             >
               <Download size={16} /> Export JSON
             </button>
             <button
-
               onClick={async () => {
                 try {
                   await enableSlot();
@@ -369,19 +403,16 @@ export default function Report() {
         </div>
       </div>
 
-
       <div className="bg-orange-100 border border-orange-300 rounded-lg p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-orange-700 mb-2">
-
               <Calendar size={16} className="inline mr-1" /> Select Date
             </label>
             <input
               type="date"
               value={selectedDate}
-              onChange={e => setSelectedDate(e.target.value)}
-
+              onChange={(e) => setSelectedDate(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
@@ -391,9 +422,7 @@ export default function Report() {
             </label>
             <input
               type="text"
-
               placeholder="Search by email..."
-
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -421,7 +450,6 @@ export default function Report() {
             >
               <X size={16} /> Clear Filters
             </button>
-
           </div>
         </div>
       </div>
@@ -454,7 +482,6 @@ export default function Report() {
               <Calendar className="w-6 h-6 text-orange-700" />
             </div>
             <div className="ml-4">
-
               <p className="text-sm font-medium text-orange-600">
                 Total Bookings
               </p>
@@ -474,12 +501,10 @@ export default function Report() {
               <p className="text-sm font-medium text-orange-600">Confirmed</p>
               <p className="text-2xl font-bold text-green-800">
                 {statistics.booked}
-
               </p>
             </div>
           </div>
         </div>
-
 
         <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">
           <div className="flex items-center">
@@ -490,13 +515,11 @@ export default function Report() {
               <p className="text-sm font-medium text-orange-600">Cancelled</p>
               <p className="text-2xl font-bold text-red-800">
                 {statistics.cancelled}
-
               </p>
             </div>
           </div>
         </div>
       </div>
-
 
       <div className="bg-orange-100 rounded-lg border border-orange-200 overflow-hidden">
         {isLoading ? (
@@ -514,7 +537,11 @@ export default function Report() {
                       type="checkbox"
                       checked={selectAll}
                       onChange={handleSelectAll}
-                      disabled={filteredBookings.filter(booking => booking.status !== "cancelled").length === 0}
+                      disabled={
+                        filteredBookings.filter(
+                          (booking) => booking.status !== "cancelled"
+                        ).length === 0
+                      }
                       className="rounded border-orange-300 text-orange-600 focus:ring-orange-500"
                     />
                   </th>
@@ -546,7 +573,11 @@ export default function Report() {
                         {item.email}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(item.status)}`}>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(
+                            item.status
+                          )}`}
+                        >
                           {item.status}
                         </span>
                       </td>
@@ -554,11 +585,13 @@ export default function Report() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={3} className="px-6 py-8 text-center text-orange-600">
-                      {selectedDate 
-                        ? "No bookings found for the selected date and filters" 
-                        : "Please select a date to view bookings"
-                      }
+                    <td
+                      colSpan={3}
+                      className="px-6 py-8 text-center text-orange-600"
+                    >
+                      {selectedDate
+                        ? "No bookings found for the selected date and filters"
+                        : "Please select a date to view bookings"}
                     </td>
                   </tr>
                 )}
@@ -579,7 +612,6 @@ export default function Report() {
             ({filteredBookings.length} of {bookingData.length} records)
           </span>
         )}
-
       </div>
     </div>
   );
