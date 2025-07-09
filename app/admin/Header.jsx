@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Download } from "lucide-react";
 import goml from "../assets/goml.png";
 import AddForm from "./AddForm";
+import { initializeSlot } from "../services/intializeSlot";
 
 export default function Header({
   exportToCSV,
@@ -23,6 +24,10 @@ export default function Header({
     toast.success(`Added booking for ${email}`);
     setIsLoading(false);
     setShowModal(false);
+  };
+
+  const handleInitializeSlot = async () => {
+    await initializeSlot();
   };
 
   return (
@@ -52,6 +57,12 @@ export default function Header({
               className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             >
               <Download size={16} /> Export JSON
+            </button>
+            <button
+              onClick={handleInitializeSlot}
+              className="px-4 py-2 cursor-pointer bg-green-600 text-white rounded-lg hover:bg-green-700 w-full sm:w-auto"
+            >
+              Initialize
             </button>
             <button
               onClick={enableSlot}
