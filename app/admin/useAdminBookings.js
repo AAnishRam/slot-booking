@@ -18,7 +18,7 @@ export function useAdminBookings() {
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [selectedBookings, setSelectedBookings] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(getTomorrow()); 
+  const [selectedDate, setSelectedDate] = useState(getTomorrow());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -26,58 +26,61 @@ export function useAdminBookings() {
   const [error, setError] = useState(false);
 
   // Fetch bookings when date changes
-useEffect(() => {
-  if (!selectedDate) {
-    setBookingData([]);
-    setFilteredBookings([]);
-    return;
-  }
-
-  setIsLoading(true);
-  setError(false);
-
-  const controller = new AbortController(); // optional, for canceling
-  const timeoutId = setTimeout(() => {
-    setError(true);
-    toast.error("Request timed out. Please try again.");
-    controller.abort();
-    setIsLoading(false);
-  }, 5000); 
-
-  const [year, month, day] = selectedDate.split("-");
-  const formattedDate = `${day}-${month}-${year}`;
-
-  getBookingsByDate(formattedDate)
-    .then((response) => {
-      clearTimeout(timeoutId); // Clear timeout on success
-      if (response && response.data) {
-        const { list_of_booked = [], list_of_cancelled = [] } = response.data;
-        const bookings = [
-          ...list_of_booked.map((email) => ({ email, status: "booked" })),
-          ...list_of_cancelled.map((email) => ({ email, status: "cancelled" })),
-        ];
-        setBookingData(bookings);
-        setFilteredBookings(bookings);
-      } else {
-        setError(true);
-        toast.error("No data found.");
-        setBookingData([]);
-        setFilteredBookings([]);
-      }
-    })
-    .catch((err) => {
-      clearTimeout(timeoutId);
-      setError(true);
-      toast.error("Failed to fetch bookings. Please try again later.");
+  useEffect(() => {
+    if (!selectedDate) {
       setBookingData([]);
       setFilteredBookings([]);
-    })
-    .finally(() => {
-      setIsLoading(false);
-    });
+      return;
+    }
 
-  return () => clearTimeout(timeoutId); // clean up if component unmounts
-}, [selectedDate]);
+    setIsLoading(true);
+    setError(false);
+
+    const controller = new AbortController(); // optional, for canceling
+    const timeoutId = setTimeout(() => {
+      setError(true);
+      toast.error("Request timed out. Please try again.");
+      controller.abort();
+      setIsLoading(false);
+    }, 5000);
+
+    const [year, month, day] = selectedDate.split("-");
+    const formattedDate = `${day}-${month}-${year}`;
+
+    getBookingsByDate(formattedDate)
+      .then((response) => {
+        clearTimeout(timeoutId); // Clear timeout on success
+        if (response && response.data) {
+          const { list_of_booked = [], list_of_cancelled = [] } = response.data;
+          const bookings = [
+            ...list_of_booked.map((email) => ({ email, status: "booked" })),
+            ...list_of_cancelled.map((email) => ({
+              email,
+              status: "cancelled",
+            })),
+          ];
+          setBookingData(bookings);
+          setFilteredBookings(bookings);
+        } else {
+          setError(true);
+          toast.error("No data found.");
+          setBookingData([]);
+          setFilteredBookings([]);
+        }
+      })
+      .catch((err) => {
+        clearTimeout(timeoutId);
+        setError(true);
+        toast.error("Failed to fetch bookings. Please try again later.");
+        setBookingData([]);
+        setFilteredBookings([]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+
+    return () => clearTimeout(timeoutId); // clean up if component unmounts
+  }, [selectedDate]);
 
   // Filter bookings when search/status changes
   useEffect(() => {
@@ -119,37 +122,47 @@ useEffect(() => {
 
   const handleSelectBooking = (email) => {
     setSelectedBookings((prev) =>
-      prev.includes(email)
-        ? prev.filter((e) => e !== email)
-        : [...prev, email]
+      prev.includes(email) ? prev.filter((e) => e !== email) : [...prev, email]
     );
   };
 
   const handleDeleteSelected = async () => {
     setIsDeleting(true);
     try {
+      let allSuccess = true;
+      console.log("Selected for deletion:", selectedBookings);
+
       for (const email of selectedBookings) {
-        await deleteUserBooking(email);
+        const result = await deleteUserBooking(email);
+        if (!result) {
+          allSuccess = false;
+        }
       }
-      // Refetch bookings from backend
+
+      if (allSuccess) {
+        toast.success("Selected bookings deleted");
+      } else {
+        toast.error("Some bookings failed to delete");
+      }
+
       const [year, month, day] = selectedDate.split("-");
       const formattedDate = `${day}-${month}-${year}`;
       const response = await getBookingsByDate(formattedDate);
+
       let bookings = [];
       if (response && response.data) {
         const { list_of_booked = [], list_of_cancelled = [] } = response.data;
         bookings = [
-          ...list_of_booked.map(email => ({ email, status: "booked" })),
-          ...list_of_cancelled.map(email => ({ email, status: "cancelled" })),
+          ...list_of_booked.map((email) => ({ email, status: "booked" })),
+          ...list_of_cancelled.map((email) => ({ email, status: "cancelled" })),
         ];
       }
       setBookingData(bookings);
       setFilteredBookings(bookings);
       setSelectedBookings([]);
       setSelectAll(false);
-      toast.success("Selected bookings deleted");
     } catch {
-      toast.error("Failed to delete some bookings");
+      toast.error("Failed to delete bookings");
     }
     setIsDeleting(false);
   };
