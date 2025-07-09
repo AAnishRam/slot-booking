@@ -1,9 +1,10 @@
 import api from "./api";
 
+
 export const deleteUserBooking = async (mail_id) => {
   try {
     const response = await api.delete('/goML/booking/delete', {
-      data: { mail_id }, 
+      params: { mail_id }, 
     });
     console.log("Booking deleted successfully:", response.data);
     return response.data;

@@ -1,14 +1,7 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Calendar, User, X } from "lucide-react";
 
-export default function Statistics({ bookingData }) {
-  const statistics = useMemo(() => {
-    const total = bookingData.length;
-    const booked = bookingData.filter(b => b.status === "booked").length;
-    const cancelled = bookingData.filter(b => b.status === "cancelled").length;
-    return { total, booked, cancelled };
-  }, [bookingData]);
-
+export default function Statistics({ statistics }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div className="bg-orange-100 p-6 rounded-lg border border-orange-200">

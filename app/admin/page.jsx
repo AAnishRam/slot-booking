@@ -1,87 +1,82 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import { useAdminBookings } from "./useAdminBookings";
 import Header from "./Header";
+import ReportFilter from "./Filter";
+import BulkActions from "./BulkActions";
 import Statistics from "./Statistics";
 import BookingsTable from "./BookingsTable";
-import FilterPanel from "./FilterPanel";
-import Footer from "./Footer";
-import { getBookingsByDate } from "../services/getBookings";
-import { exportToCSV, exportToJSON, getStatusColor, formatDate } from "../utils/exportUtils";
+import { Toaster } from "react-hot-toast";
+import { formatDate, getStatusColor, exportToCSV, exportToJSON } from "./utils";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function AdminPage() {
-    
-  const getTomorrow = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().slice(0, 10);
-  };
-
-  const [selectedDate, setSelectedDate] = useState(getTomorrow());
-  const [bookingData, setBookingData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-
-  useEffect(() => {
-    if (!selectedDate) return;
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [year, month, day] = selectedDate.split("-");
-        const formattedDate = `${day}-${month}-${year}`;
-        const res = await getBookingsByDate(formattedDate);
-        if (res?.success && res.data) {
-          const { list_of_booked, list_of_cancelled } = res.data;
-          const combined = [
-            ...(list_of_booked || []).map(email => ({ email, status: "booked" })),
-            ...(list_of_cancelled || []).map(email => ({ email, status: "cancelled" })),
-          ];
-          setBookingData(combined);
-        } else {
-          setBookingData([]);
-        }
-      } catch (error) {
-        setBookingData([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, [selectedDate]);
-
-  const filteredBookings = useMemo(() => {
-    let filtered = bookingData;
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(b => b.status === statusFilter);
-    }
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(b => b.email.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-    return filtered;
-  }, [bookingData, statusFilter, searchTerm]);
+  const props = useAdminBookings();
 
   return (
     <div className="min-h-screen w-full bg-amber-50 p-6 flex flex-col">
+      <Toaster position="top-right" />
       <Header
-        exportToCSV={() => exportToCSV(filteredBookings, selectedDate)}
-        exportToJSON={() => exportToJSON(filteredBookings, selectedDate)}
-        selectedDate={selectedDate}
+        exportToCSV={() =>
+          exportToCSV(props.filteredBookings, props.selectedDate)
+        }
+        exportToJSON={() =>
+          exportToJSON(props.filteredBookings, props.selectedDate)
+        }
+        filteredBookings={props.filteredBookings}
+        selectedDate={props.selectedDate}
+        enableSlot={props.enableSlot}
+        disableSlot={props.disableSlot}
+        handleDeleteSlot={props.handleDeleteSlot}
+        toast={props.toast}
       />
-      <FilterPanel
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
+      <ReportFilter
+        selectedDate={props.selectedDate}
+        setSelectedDate={props.setSelectedDate}
+        searchTerm={props.searchTerm}
+        setSearchTerm={props.setSearchTerm}
+        statusFilter={props.statusFilter}
+        setStatusFilter={props.setStatusFilter}
+        clearFilters={props.clearFilters}
       />
-      <Statistics bookingData={filteredBookings} />
-      <BookingsTable
-        bookings={filteredBookings}
-        isLoading={isLoading}
-        getStatusColor={getStatusColor}
+      <BulkActions
+        selectedBookings={props.selectedBookings || []}
+        isDeleting={props.isDeleting}
+        handleDeleteSelected={props.handleDeleteSelected}
       />
-      <Footer />
+      <Statistics statistics={props.statistics} />
+
+      <ErrorBoundary>
+        {props.error ? (
+          <div className="bg-red-100 text-red-700 p-4 rounded mt-4">
+            Could not load bookings. Please check your connection or try again
+            later.
+          </div>
+        ) : (
+          <BookingsTable
+            filteredBookings={props.filteredBookings || []}
+            selectAll={props.selectAll}
+            handleSelectAll={props.handleSelectAll}
+            selectedBookings={props.selectedBookings || []}
+            handleSelectBooking={props.handleSelectBooking}
+            getStatusColor={getStatusColor}
+            isLoading={props.isLoading}
+          />
+        )}
+      </ErrorBoundary>
+
+      <div className="mt-8 text-center text-sm text-orange-600">
+        {props.selectedDate && (
+          <span className="text-orange-800 font-medium">
+            Showing results for: {formatDate(props.selectedDate)}
+          </span>
+        )}
+        {props.filteredBookings?.length > 0 && (
+          <span className="ml-4">
+            ({props.filteredBookings.length} of {props.bookingData?.length || 0}{" "}
+            records)
+          </span>
+        )}
+      </div>
     </div>
   );
 }

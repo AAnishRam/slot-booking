@@ -1,13 +1,14 @@
 import React from "react";
-import { Calendar, Search, Filter } from "lucide-react";
+import { Calendar, Search, Filter, X } from "lucide-react";
 
-export default function FilterPanel({
+export default function ReportFilter({
   selectedDate,
   setSelectedDate,
   searchTerm,
   setSearchTerm,
   statusFilter,
   setStatusFilter,
+  clearFilters
 }) {
   return (
     <div className="bg-orange-100 border border-orange-300 rounded-lg p-6 mb-6">
@@ -20,7 +21,7 @@ export default function FilterPanel({
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md"
+            className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
         </div>
         <div>
@@ -32,7 +33,7 @@ export default function FilterPanel({
             placeholder="Search by email..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md"
+            className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
         </div>
         <div>
@@ -42,12 +43,20 @@ export default function FilterPanel({
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md"
+            className="w-full px-3 py-2 bg-white border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
           >
             <option value="all">All Status</option>
             <option value="booked">Booked</option>
             <option value="cancelled">Cancelled</option>
           </select>
+        </div>
+        <div className="flex items-end">
+          <button
+            onClick={clearFilters}
+            className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
+          >
+            <X size={16} /> Clear Filters
+          </button>
         </div>
       </div>
     </div>
