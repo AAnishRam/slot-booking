@@ -45,13 +45,13 @@ export default function AdminPage() {
       />
       <Statistics statistics={props.statistics} />
 
-      {props.error ? (
-        <div className="bg-red-100 text-red-700 p-4 rounded mt-4">
-          Could not load bookings. Please check your connection or try again
-          later.
-        </div>
-      ) : (
-        <ErrorBoundary>
+      <ErrorBoundary>
+        {props.error ? (
+          <div className="bg-red-100 text-red-700 p-4 rounded mt-4">
+            Could not load bookings. Please check your connection or try again
+            later.
+          </div>
+        ) : (
           <BookingsTable
             filteredBookings={props.filteredBookings || []}
             selectAll={props.selectAll}
@@ -61,8 +61,8 @@ export default function AdminPage() {
             getStatusColor={getStatusColor}
             isLoading={props.isLoading}
           />
-        </ErrorBoundary>
-      )}
+        )}
+      </ErrorBoundary>
 
       <div className="mt-8 text-center text-sm text-orange-600">
         {props.selectedDate && (
