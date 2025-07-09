@@ -5,9 +5,9 @@ export const handlebookSeat = async (setIsBottomSeatOccupied) => {
     const response = await api.post("/goML/booking/book",{
       mail_id: "user@example.com"
     });
-    console.log("Booking response:", response.status);
+    console.log("Booking response:", response);
     if (response.status === 200) {
-      setIsBottomSeatOccupied(true);
+      setIsBottomSeatOccupied(!response.data.book_now_enabled);
     }
   } catch (error) {
     console.error("Error booking seat:", error);
