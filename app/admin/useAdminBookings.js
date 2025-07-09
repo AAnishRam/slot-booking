@@ -169,7 +169,10 @@ export function useAdminBookings() {
 
   const handleDeleteSlot = async () => {
     try {
-      await deleteSlot(selectedDate);
+      const [year, month, day] = selectedDate.split("-");
+      const formattedDate = `${day}-${month}-${year}`; // dd-mm-yyyy
+
+      await deleteSlot(formattedDate);
       setBookingData([]);
       setFilteredBookings([]);
       toast.success("Slot deleted");
