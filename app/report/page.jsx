@@ -205,27 +205,27 @@ export default function Report() {
     }
   };
 
-  const handleDeleteSlot = async () => {
-    const dateInput = prompt("Enter date to delete (dd-mm-yyyy format):");
+  // const handleDeleteSlot = async () => {
+  //   const dateInput = prompt("Enter date to delete (dd-mm-yyyy format):");
 
-    if (!dateInput) return;
+  //   if (!dateInput) return;
 
-    const datePattern = /^\d{2}-\d{2}-\d{4}$/;
-    if (!datePattern.test(dateInput)) {
-      alert("Invalid date format. Please use dd-mm-yyyy format.");
-      return;
-    }
+  //   const datePattern = /^\d{2}-\d{2}-\d{4}$/;
+  //   if (!datePattern.test(dateInput)) {
+  //     alert("Invalid date format. Please use dd-mm-yyyy format.");
+  //     return;
+  //   }
 
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete the slot for ${dateInput}?`
-    );
+  //   const confirmDelete = window.confirm(
+  //     `Are you sure you want to delete the slot for ${dateInput}?`
+  //   );
 
-    if (confirmDelete) {
-      try {
-        console.log(await deleteSlot(dateInput));
-      } catch (error) {}
-    }
-  };
+  //   if (confirmDelete) {
+  //     try {
+  //       console.log(await deleteSlot(dateInput));
+  //     } catch (error) {}
+  //   }
+  // };
 
   const statistics = useMemo(() => {
     const total = bookingData.length;
