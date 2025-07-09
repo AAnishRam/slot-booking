@@ -13,7 +13,6 @@ const ContentArea = ({ children }) => {
 
   useEffect(() => {
     const fetchSeatStatus = async () => {
-      // Simulate an API call to check seat status
       getSeatStatus(setIsBottomSeatOccupied);
     };
 
@@ -40,7 +39,7 @@ const ContentArea = ({ children }) => {
           </div>
         )}
         <div className="flex gap-4 mt-10 flex-wrap items-center justify-center">
-          <button
+         {!isBottomSeatOccupied ?  <button
             onClick={() => handlebookSeat(setIsBottomSeatOccupied)}
             className=" cursor-pointer px-6 py-3 bg-emerald-600 text-white font-medium rounded-lg 
               hover:bg-emerald-500 active:bg-emerald-700 
@@ -50,8 +49,7 @@ const ContentArea = ({ children }) => {
           >
             Book Seat
           </button>
-
-          <button
+         : <button
             onClick={() => handleCancelSeat(setIsBottomSeatOccupied)}
             className="cursor-pointer  px-6 py-3 bg-red-600 text-white font-medium rounded-lg 
               hover:bg-red-500 active:bg-red-700 
@@ -60,7 +58,7 @@ const ContentArea = ({ children }) => {
             disabled={!isBottomSeatOccupied}
           >
             Cancel
-          </button>
+          </button> }
         </div>
       </div>
     </div>
