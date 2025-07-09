@@ -1,5 +1,4 @@
 import React from "react";
-
 export default function BookingsTable({
   filteredBookings=[],
   selectAll,
@@ -7,7 +6,7 @@ export default function BookingsTable({
   selectedBookings=[],
   handleSelectBooking,
   getStatusColor,
-  isLoading
+  isLoading,
 }) {
   return (
     <div className="bg-orange-100 rounded-lg border border-orange-200 overflow-hidden">
